@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FILE MANAGER</title>
+    <title>Ad4ndi's files</title>
     <style>
         body {
             background-color: black;
@@ -36,9 +36,13 @@
         }
         .folder {
             font-weight: bold;
+            cursor: pointer;
         }
         .file {
             margin-left: 20px;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -50,10 +54,9 @@
     </div>
 
     <script>
-        async function loadFiles() {
-            const repo = "Ad4ndi/ad4ndi.github.io";
+        async function loadFiles(path, parentElement, indent = 0) {
+            const repo = "Ad4ndi/Ad4ndi.github.io";
             const branch = "main";
-            const path = "tests";
             const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
 
             try {
@@ -61,21 +64,35 @@
                 if (!response.ok) throw new Error();
                 const data = await response.json();
 
-                const fileList = document.getElementById("file-list");
-                fileList.innerHTML = "";
-
                 data.forEach(item => {
                     const fileElement = document.createElement("div");
-                    fileElement.className = "file";
-                    fileElement.innerHTML = `<a href="${item.download_url}" target="_blank">${item.name}</a>`;
-                    fileList.appendChild(fileElement);
+                    fileElement.className = item.type === "dir" ? "folder" : "file";
+                    fileElement.style.marginLeft = indent + "px";
+
+                    if (item.type === "dir") {
+                        fileElement.innerHTML = `${item.name}/`;
+                        const subContainer = document.createElement("div");
+                        subContainer.className = "hidden";
+                        parentElement.appendChild(fileElement);
+                        parentElement.appendChild(subContainer);
+
+                        fileElement.addEventListener("click", () => {
+                            subContainer.classList.toggle("hidden");
+                            if (!subContainer.classList.contains("hidden") && !subContainer.hasChildNodes()) {
+                                loadFiles(item.path, subContainer, indent + 20);
+                            }
+                        });
+                    } else {
+                        fileElement.innerHTML = `<a href="${item.download_url}" target="_blank">${item.name}</a>`;
+                        parentElement.appendChild(fileElement);
+                    }
                 });
             } catch {
-                document.getElementById("file-list").innerHTML = "Error.";
+                parentElement.innerHTML = "Ошибка загрузки.";
             }
         }
 
-        loadFiles();
+        loadFiles("tests", document.getElementById("file-list"));
     </script>
 
 </body>
