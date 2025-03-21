@@ -56,6 +56,7 @@
         async function loadFiles(path, parentElement, indent = 0) {
             const repo = "Ad4ndi/Ad4ndi.github.io";
             const branch = "main";
+            const baseUrl = "https://Ad4ndi.github.io";
             const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
 
             try {
@@ -82,7 +83,11 @@
                             }
                         });
                     } else {
-                        fileElement.innerHTML = `<a href="${item.download_url}" target="_blank">${item.name}</a>`;
+                        const fileUrl = item.name.endsWith(".html") 
+                            ? `${baseUrl}/${item.path}` 
+                            : item.download_url;
+
+                        fileElement.innerHTML = `<a href="${fileUrl}" target="_blank">${item.name}</a>`;
                         parentElement.appendChild(fileElement);
                     }
                 });
