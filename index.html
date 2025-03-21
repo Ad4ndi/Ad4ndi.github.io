@@ -1,1 +1,82 @@
-test
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILE MANAGER</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            border: 3px solid gray;
+            padding: 20px;
+            background-color: black;
+            min-width: 300px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .container:hover {
+            border-color: white;
+        }
+        a {
+            color: white;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .folder {
+            font-weight: bold;
+        }
+        .file {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="folder">/tests</div>
+        <div id="file-list">Loading...</div>
+    </div>
+
+    <script>
+        async function loadFiles() {
+            const repo = "Ad4ndi/ad4ndi.github.io";
+            const branch = "main";
+            const path = "tests";
+            const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error();
+                const data = await response.json();
+
+                const fileList = document.getElementById("file-list");
+                fileList.innerHTML = "";
+
+                data.forEach(item => {
+                    const fileElement = document.createElement("div");
+                    fileElement.className = "file";
+                    fileElement.innerHTML = `<a href="${item.download_url}" target="_blank">${item.name}</a>`;
+                    fileList.appendChild(fileElement);
+                });
+            } catch {
+                document.getElementById("file-list").innerHTML = "Error.";
+            }
+        }
+
+        loadFiles();
+    </script>
+
+</body>
+</html>
