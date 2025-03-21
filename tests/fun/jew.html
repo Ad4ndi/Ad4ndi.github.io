@@ -3,41 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mossad Bounce</title>
+    <title>Mossad Screensaver</title>
     <style>
         body {
+            background-color: white;
             margin: 0;
             overflow: hidden;
-            background-color: white;
         }
         img {
             position: absolute;
-            width: 150px;
+            width: 100px;
+            height: auto;
         }
     </style>
 </head>
 <body>
 
-<img src="david.png" id="star">
+<img id="star" src="davidpng" alt="Mossad">
 
 <script>
     const star = document.getElementById("star");
     let x = 100, y = 100;
     let dx = 2, dy = 2;
+    let angle = 0;
 
-    function move() {
+    function updatePosition() {
+        const maxX = window.innerWidth - star.clientWidth;
+        const maxY = window.innerHeight - star.clientHeight;
+
         x += dx;
         y += dy;
+        angle += 2;
 
-        if (x + star.clientWidth >= window.innerWidth || x <= 0) { dx = -dx; }
-        if (y + star.clientHeight >= window.innerHeight || y <= 0) { dy = -dy; }
+        if (x <= 0 || x >= maxX) dx *= -1;
+        if (y <= 0 || y >= maxY) dy *= -1;
 
-        star.style.left = x + "px";
-        star.style.top = y + "px";
-
-        requestAnimationFrame(move);
+        star.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
+        requestAnimationFrame(updatePosition);
     }
-    move();
+
+    updatePosition();
 </script>
 
 </body>
