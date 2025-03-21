@@ -1,1 +1,44 @@
-2
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mossad Bounce</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: white;
+        }
+        img {
+            position: absolute;
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+
+<img src="david.png" id="star">
+
+<script>
+    const star = document.getElementById("star");
+    let x = 100, y = 100;
+    let dx = 2, dy = 2;
+
+    function move() {
+        x += dx;
+        y += dy;
+
+        if (x + star.clientWidth >= window.innerWidth || x <= 0) { dx = -dx; }
+        if (y + star.clientHeight >= window.innerHeight || y <= 0) { dy = -dy; }
+
+        star.style.left = x + "px";
+        star.style.top = y + "px";
+
+        requestAnimationFrame(move);
+    }
+    move();
+</script>
+
+</body>
+</html>
