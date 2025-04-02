@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+@keyframes xz {
+  0% {transform: rotate(0deg) scale(1) hue-rotate(0deg);}
+  100% {transform: rotate(3600deg) scale(10) hue-rotate(3600deg);}
+}
+
+body {
+  background: #000;
+  margin: 0;
+  overflow: hidden;
+  cursor: none;
+}
+
+img {
+  position: absolute;
+  mix-blend-mode: difference;
+  filter: invert(100%) hue-rotate(90deg);
+  animation: xz 23s linear infinite;
+}
+
+#prison {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  font-size: 3em;
+  color: #ff00ff;
+  text-shadow: 0 0 10px #00ffff;
+}
+</style>
+</head>
+<body>
+
+<script>
+const demons = ['LISP', 'BSD', 'PRUSSIA', 'MANNERHEIM', '()', 'CAR/CDR', 'SICP'];
+const colors = ['#ff00ff', '#00ffff', '#ff5500', '#55ff00'];
+
+function spawnImage(src) {
+  const img = new Image();
+  img.src = src;
+  img.style.top = Math.random() * 120 + '%';
+  img.style.left = Math.random() * 120 + '%';
+  img.style.width = Math.random() * 300 + 50 + 'px';
+  document.body.appendChild(img);
+  
+  setInterval(() => {
+    img.style.filter = `hue-rotate(${Math.random()*360}deg) 
+                       invert(${Math.random()}) 
+                       blur(${Math.random()*10}px)`;
+  }, 100);
+}
+
+[['lisp.png', 666], ['masc.png', 333], ['prusa.png', 777], 
+ ['man.png', 234], ['bsd.png', 123]].forEach(([src, delay]) => {
+  setInterval(() => spawnImage(src), delay);
+});
+
+setInterval(() => {
+  const word = document.createElement('div');
+  word.textContent = demons[Math.floor(Math.random()*demons.length)];
+  word.style.position = 'absolute';
+  word.style.color = colors[Math.floor(Math.random()*colors.length)];
+  word.style.top = Math.random() * window.innerHeight + 'px';
+  word.style.left = Math.random() * window.innerWidth + 'px';
+  word.style.fontSize = Math.random() * 100 + 20 + 'px';
+  document.body.appendChild(word);
+  
+  setTimeout(() => word.remove(), 5000);
+}, 300);
+
+document.addEventListener('mousemove', (e) => {
+  document.body.style.transform = `
+    perspective(1000px)
+    rotateX(${(e.clientY/window.innerHeight)*360}deg)
+    rotateZ(${(e.clientX/window.innerWidth)*720}deg)
+  `;
+});
+
+document.addEventListener('click', () => {
+  const portal = document.createElement('div');
+  portal.style.background = `radial-gradient(circle, 
+    ${colors[Math.floor(Math.random()*colors.length)]}, 
+    ${colors[Math.floor(Math.random()*colors.length)]})`;
+  portal.style.width = '200%';
+  portal.style.height = '200%';
+  portal.style.position = 'fixed';
+  portal.style.mixBlendMode = 'exclusion';
+  document.body.appendChild(portal);
+});
+</script>
+
+<div id="prison">EVAL(APPLY(LOOP))</div>
+
+</body>
+</html>
