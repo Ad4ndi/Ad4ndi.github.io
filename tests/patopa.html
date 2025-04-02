@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path to Path</title>
+    <style>
+        body {
+            background: black;
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #maze-container {
+            position: absolute;
+            border: 4px solid #edb409;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px red, 0 0 30px blue, 0 0 40px yellow;
+            filter: blur(5px);
+            transition: all 0.5s ease-in-out;
+        }
+        canvas {
+            display: block;
+        }
+        #stats {
+            margin-top: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 0 0 10px red, 0 0 20px blue, 0 0 30px yellow;
+            animation: glitch 0.2s infinite alternate;
+        }
+        @keyframes glitch {
+            0% { transform: translateX(-2px); text-shadow: 2px 2px 5px red, -2px -2px 5px blue; }
+            100% { transform: translateX(2px); text-shadow: -2px -2px 5px red, 2px 2px 5px blue; }
+        }
+    </style>
+</head>
+<body>
+    <div id="maze-container">
+        <canvas id="mazeCanvas"></canvas>
+    </div>
+    <div id="stats">Level: 0 | Time: 0s</div>
+
+    <script>
+        const canvas = document.getElementById("mazeCanvas");
+        const ctx = canvas.getContext("2d");
+        const size = 20;
+        const cols = 15, rows = 15;
+        let level = 0, startTime, timer;
+
+        canvas.width = cols * size;
+        canvas.height = rows * size;
+
+        let maze, player, exit;
+
+        function generateMaze() {
+            maze = Array.from({ length: rows }, () => Array(cols).fill(true));
+            const stack = [[0, 0]];
+            maze[0][0] = false;
+
+            while (stack.length) {
+                let [x, y] = stack.pop();
+                let neighbors = [
+                    [x - 2, y], [x + 2, y],
+                    [x, y - 2], [x, y + 2]
+                ].filter(([nx, ny]) => nx >= 0 && ny >= 0 && nx < cols && ny < rows && maze[ny][nx]);
+
+                if (neighbors.length) {
+                    stack.push([x, y]);
+                    let [nx, ny] = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    maze[ny][nx] = false;
+                    maze[(y + ny) / 2][(x + nx) / 2] = false;
+                    stack.push([nx, ny]);
+                }
+            }
+
+            player = { x: 0, y: 0 };
+            exit = { x: cols - 1, y: rows - 1 };
+        }
+
+        function getRandomColor() {
+            return `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+        }
+
+        function drawMaze() {
+            ctx.fillStyle = getRandomColor();
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    if (maze[y][x]) {
+                        ctx.fillStyle = getRandomColor();
+                        ctx.fillRect(x * size, y * size, size, size);
+                    }
+                }
+            }
+
+            ctx.fillStyle = `rgba(255, 0, 0, ${Math.random()})`;
+            let playerSize = size * (0.7 + Math.random() * 0.3);
+            ctx.fillRect(player.x * size + (size - playerSize) / 2, player.y * size + (size - playerSize) / 2, playerSize, playerSize);
+
+            ctx.fillStyle = `rgba(0, 255, 0, ${Math.random()})`;
+            let exitSize = size * (0.7 + Math.random() * 0.3);
+            ctx.fillRect(exit.x * size + (size - exitSize) / 2, exit.y * size + (size - exitSize) / 2, exitSize, exitSize);
+        }
+
+        function movePlayer(dx, dy) {
+            let nx = player.x + dx, ny = player.y + dy;
+            if (nx >= 0 && ny >= 0 && nx < cols && ny < rows && !maze[ny][nx]) {
+                player.x = nx;
+                player.y = ny;
+                if (player.x === exit.x && player.y === exit.y) {
+                    level++;
+                    startTime = Date.now();
+                    generateMaze();
+                }
+                drawMaze();
+            }
+        }
+
+        function updateBackground() {
+            document.body.style.background = getRandomColor();
+            document.getElementById("maze-container").style.transform = `rotate(${Math.random() * 10 - 5}deg) scale(${1 + Math.random() * 0.1})`;
+            document.getElementById("maze-container").style.filter = `blur(${Math.random() * 10}px)`;
+        }
+
+        function teleportMaze() {
+            let mazeContainer = document.getElementById("maze-container");
+            let x = Math.random() * (window.innerWidth - canvas.width);
+            let y = Math.random() * (window.innerHeight - canvas.height);
+            let duration = Math.random() > 0.5 ? "0.5s" : "0.05s";
+            mazeContainer.style.transition = `all ${duration} ease-in-out`;
+            mazeContainer.style.left = `${x}px`;
+            mazeContainer.style.top = `${y}px`;
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") movePlayer(0, -1);
+            if (e.key === "ArrowDown") movePlayer(0, 1);
+            if (e.key === "ArrowLeft") movePlayer(-1, 0);
+            if (e.key === "ArrowRight") movePlayer(1, 0);
+        });
+
+        function updateStats() {
+            let time = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById("stats").textContent = `Level: ${level} | Time: ${time}s`;
+        }
+
+        function startGame() {
+            generateMaze();
+            startTime = Date.now();
+            drawMaze();
+            timer = setInterval(updateStats, 100);
+            setInterval(drawMaze, 200);
+            setInterval(updateBackground, 500);
+            setInterval(teleportMaze, 2000);
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
